@@ -2,6 +2,10 @@ import bcrypt from "bcryptjs";
 import { neon } from '@neondatabase/serverless';
 import { users, topics, questions } from "../../lib/placeholder-data";
 
+if (!process.env.POSTGRES_URL) {
+  throw new Error('POSTGRES_URL is not defined');
+}
+
 const sql = neon(process.env.POSTGRES_URL);
 
 async function seedUsers() {
