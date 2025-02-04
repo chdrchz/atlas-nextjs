@@ -6,6 +6,5 @@ export default async function Page({
   const { id } = await params;
 
   /* await new Promise(resolve => setTimeout(resolve, 3000)); */
-
   return <div>Topic Page: {id}</div>;
 }
