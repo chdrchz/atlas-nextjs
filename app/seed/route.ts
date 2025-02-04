@@ -1,16 +1,12 @@
 import bcrypt from "bcryptjs";
-import { neon } from '@neondatabase/serverless';
+import { db } from "@vercel/postgres";
 import { users, topics, questions } from "../../lib/placeholder-data";
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not defined');
-}
-
-const sql = neon(process.env.POSTGRES_URL);
+const client = await db.connect();
 
 async function seedUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
+  await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  await client.sql`
     CREATE TABLE IF NOT EXISTS users (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -22,7 +18,7 @@ async function seedUsers() {
   const insertedUsers = await Promise.all(
     users.map(async (user) => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      return sql`
+      return client.sql`
         INSERT INTO users (id, name, email, password)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
         ON CONFLICT (id) DO NOTHING;
@@ -34,8 +30,9 @@ async function seedUsers() {
 }
 
 async function seedTopics() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
+  await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+  await client.sql`
     CREATE TABLE IF NOT EXISTS topics (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       title VARCHAR(255) NOT NULL
@@ -44,7 +41,7 @@ async function seedTopics() {
 
   const insertedTopics = await Promise.all(
     topics.map(
-      (topic) => sql`
+      (topic) => client.sql`
         INSERT INTO topics (id, title)
         VALUES (${topic.id}, ${topic.title})
         ON CONFLICT (id) DO NOTHING;
@@ -56,8 +53,9 @@ async function seedTopics() {
 }
 
 async function seedQuestions() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
+  await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+  await client.sql`
     CREATE TABLE IF NOT EXISTS questions (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
@@ -69,7 +67,7 @@ async function seedQuestions() {
 
   const insertedQuestions = await Promise.all(
     questions.map(
-      (question) => sql`
+      (question) => client.sql`
         INSERT INTO questions (id, title, topic_id, votes)
         VALUES (${question.id}, ${question.title}, ${question.topic}, ${question.votes})
         ON CONFLICT (id) DO NOTHING;
@@ -82,15 +80,15 @@ async function seedQuestions() {
 
 export async function GET() {
   try {
-    await sql`BEGIN`;
+    await client.sql`BEGIN`;
     await seedUsers();
     await seedTopics();
     await seedQuestions();
-    await sql`COMMIT`;
+    await client.sql`COMMIT`;
 
     return Response.json({ message: "Database seeded successfully" });
   } catch (error) {
-    await sql`ROLLBACK`;
+    await client.sql`ROLLBACK`;
     return Response.json({ error }, { status: 500 });
   }
 }
