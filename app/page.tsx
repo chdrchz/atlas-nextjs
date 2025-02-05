@@ -1,7 +1,7 @@
 import Image from "next/image";
 import placeholder from "@/assets/placeholder.svg";
 import Link from "next/link";
-import { signIn } from "../auth";
+import { signIn } from "@/auth";
 
 export default function Page() {
   return (
