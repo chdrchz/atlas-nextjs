@@ -4,7 +4,7 @@ import { fetchAnswers, fetchQuestion } from "@/lib/data";
 import { HashtagIcon } from "@heroicons/react/24/outline";
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = await params;
+  const { id } = params;
   const question = await fetchQuestion(id);
   const answers = await fetchAnswers(id);
 
@@ -20,6 +20,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       <AnswerQuestion questionId={question.id} />
       {answers.map((answer) => (
         <Answer
+          key={answer.id}
           id={answer.id}
           text={answer.answer}
           votes={answer.votes}
