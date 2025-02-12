@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { incrementVotes, insertAnswer, insertQuestion, insertTopic } from "./data";
+import { incrementVotes, insertAnswer, insertQuestion, insertTopic, updateCorrectAnswer } from "./data";
 import { redirect } from "next/navigation";
 
 export async function addTopic(data: FormData) {
@@ -61,5 +61,30 @@ export async function addVote(data: FormData) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to add vote.");
+  }
+}
+
+export async function setCorrectAnswer(formData: FormData) {
+  try {
+    const questionId = formData.get("question_id");
+    const answerId = formData.get("answer_id");
+    
+    // Add validation and logging
+    console.log('Received form data:', { questionId, answerId });
+    
+    if (!questionId || typeof questionId !== 'string') {
+      throw new Error('Question ID is required');
+    }
+    if (!answerId || typeof answerId !== 'string') {
+      throw new Error('Answer ID is required');
+    }
+
+    const result = await updateCorrectAnswer(questionId, answerId);
+    console.log('Update result:', result);
+    
+    revalidatePath("/ui/questions/[id]", "page");
+  } catch (error) {
+    console.error("Detailed Error:", error);
+    throw error; // Throw the original error to see more details
   }
 }

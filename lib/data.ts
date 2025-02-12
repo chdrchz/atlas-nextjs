@@ -120,3 +120,26 @@ export async function incrementVotes(id: string) {
     throw new Error("Failed to increment votes.");
   }
 }
+
+export async function updateCorrectAnswer(questionId: string, answerId: string) {
+  try {
+    // Add console.log to debug input values
+    console.log('Updating correct answer:', { questionId, answerId });
+    
+    const data = await sql`
+      UPDATE questions 
+      SET answer_id = ${answerId}
+      WHERE id = ${questionId}
+      RETURNING *
+    `;
+    
+    // Add console.log to see if we get any rows back
+    console.log('Update result:', data.rows);
+    
+    return data.rows[0];
+  } catch (error) {
+    // Log the specific error
+    console.error("Specific Database Error:", error);
+    throw error; // Throw the original error to see more details
+  }
+}
