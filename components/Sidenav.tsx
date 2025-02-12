@@ -6,8 +6,11 @@ import SignOutButton from "./SignOutButton";
 import NewTopicButton from "./NewTopicButton";
 import LoggedInUser from "./LoggedInUser";
 import Link from "next/link";
+import { auth } from "@/auth";
 
 export default async function SideNav() {
+  const session = await auth();
+  const user = session?.user;
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
       <Logo />
@@ -16,7 +19,9 @@ export default async function SideNav() {
         <TopicLinks />
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
         <NewTopicButton />
-        <LoggedInUser />
+        {user && (
+          <LoggedInUser name={user.name ?? undefined} avatar={user.image ?? undefined}/>
+        )}
         <SignOutButton />
       </div>
     </div>
