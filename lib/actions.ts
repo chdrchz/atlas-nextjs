@@ -69,22 +69,17 @@ export async function setCorrectAnswer(formData: FormData) {
     const questionId = formData.get("question_id");
     const answerId = formData.get("answer_id");
     
-    // Add validation and logging
-    console.log('Received form data:', { questionId, answerId });
-    
     if (!questionId || typeof questionId !== 'string') {
       throw new Error('Question ID is required');
     }
     if (!answerId || typeof answerId !== 'string') {
       throw new Error('Answer ID is required');
     }
-
     const result = await updateCorrectAnswer(questionId, answerId);
     console.log('Update result:', result);
-    
     revalidatePath("/ui/questions/[id]", "page");
   } catch (error) {
     console.error("Detailed Error:", error);
-    throw error; // Throw the original error to see more details
+    throw error;
   }
 }

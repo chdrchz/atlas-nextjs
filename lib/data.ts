@@ -74,6 +74,7 @@ export async function fetchAnswers(questionId: string) {
     const data = await sql<Answer>`
       SELECT * FROM answers 
       WHERE question_id = ${questionId}
+      ORDER BY id = (SELECT answer_id FROM questions WHERE id = ${questionId}) DESC
     `;
     return data.rows;
   } catch (error) {
@@ -123,23 +124,15 @@ export async function incrementVotes(id: string) {
 
 export async function updateCorrectAnswer(questionId: string, answerId: string) {
   try {
-    // Add console.log to debug input values
-    console.log('Updating correct answer:', { questionId, answerId });
-    
     const data = await sql`
       UPDATE questions 
       SET answer_id = ${answerId}
       WHERE id = ${questionId}
       RETURNING *
     `;
-    
-    // Add console.log to see if we get any rows back
-    console.log('Update result:', data.rows);
-    
     return data.rows[0];
   } catch (error) {
-    // Log the specific error
     console.error("Specific Database Error:", error);
-    throw error; // Throw the original error to see more details
+    throw error;
   }
 }
