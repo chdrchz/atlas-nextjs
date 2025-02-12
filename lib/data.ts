@@ -72,11 +72,18 @@ export async function insertQuestion(
 export async function fetchAnswers(questionId: string) {
   try {
     const data = await sql<Answer>`
-      SELECT * FROM answers 
+      SELECT 
+        answers.*, 
+        CASE 
+          WHEN answers.id = (SELECT answer_id FROM questions WHERE id = ${questionId}) 
+          THEN true 
+          ELSE false 
+        END AS is_correct
+      FROM answers 
       WHERE question_id = ${questionId}
-      ORDER BY id = (SELECT answer_id FROM questions WHERE id = ${questionId}) DESC
+      ORDER BY is_correct DESC
     `;
-    return data.rows;
+    return data.rows; // Ensure the results have the correct 'is_correct' field
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch answers.");
